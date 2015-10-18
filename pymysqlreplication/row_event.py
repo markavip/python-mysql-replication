@@ -570,7 +570,7 @@ class TableMapEvent(BinLogEvent):
         for i in range(self.column_count):
             bit = ord(nullable_bitmap[int(i / 8)])
             null_ok = (bit & (1 << (i % 8))) != 0
-            self.columns[i].data['null_ok'] = null_ok
+            self.columns[i].__dict__['null_ok'] = null_ok
 
     def get_table(self):
         return self.table_obj
