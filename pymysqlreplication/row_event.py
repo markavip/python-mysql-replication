@@ -566,8 +566,11 @@ class TableMapEvent(BinLogEvent):
         self.table_obj = Table(self.column_schemas, self.table_id, self.schema,
                                self.table, self.columns)
 
-        # TODO: get this information instead of trashing data
-        # n              NULL-bitmask, length: (column-length * 8) / 7
+        nullable_bitmap = self.packet.read((self.column_count + 7) / 8)
+        for i in range(self.column_count):
+            bit = ord(nullable_bitmap[int(i / 8)])
+            null_ok = (bit & (1 << (i % 8))) != 0
+            self.columns[i].data['null_ok'] = null_ok
 
     def get_table(self):
         return self.table_obj
