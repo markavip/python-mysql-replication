@@ -563,14 +563,14 @@ class TableMapEvent(BinLogEvent):
                 col = Column(byte2int(column_type), column_schema, from_packet)
                 self.columns.append(col)
 
+            nullable_bitmap = self.packet.read((self.column_count + 7) / 8)
+            for i in range(self.column_count):
+                bit = ord(nullable_bitmap[int(i / 8)])
+                null_ok = (bit & (1 << (i % 8))) != 0
+                self.columns[i].__dict__['null_ok'] = null_ok
+
         self.table_obj = Table(self.column_schemas, self.table_id, self.schema,
                                self.table, self.columns)
-
-        nullable_bitmap = self.packet.read((self.column_count + 7) / 8)
-        for i in range(self.column_count):
-            bit = ord(nullable_bitmap[int(i / 8)])
-            null_ok = (bit & (1 << (i % 8))) != 0
-            self.columns[i].__dict__['null_ok'] = null_ok
 
     def get_table(self):
         return self.table_obj
